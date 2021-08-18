@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/DoNewsCode/core/config"
-	"github.com/DoNewsCode/core/config/remote"
 	"github.com/DoNewsCode/core/contract"
 	"github.com/DoNewsCode/core/di"
 	"github.com/DoNewsCode/core/events"
@@ -20,7 +19,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"go.etcd.io/etcd/client/v3"
 )
 
 func TestC_Serve(t *testing.T) {
@@ -131,27 +129,6 @@ func TestC_Default(t *testing.T) {
 	assert.Contains(t, string(output), "gorm:")
 }
 
-func TestC_Remote(t *testing.T) {
-	addr := os.Getenv("ETCD_ADDR")
-	if addr == "" {
-		t.Skip("set ETCD_ADDR for run remote test")
-	}
-	key := "core.yaml"
-	envEtcdAddrs := strings.Split(addr, ",")
-	cfg := clientv3.Config{
-		Endpoints:   envEtcdAddrs,
-		DialTimeout: 2 * time.Second,
-	}
-	_ = remote.Provider(key, &cfg)
-	if err := put(cfg, key, "name: remote"); err != nil {
-		t.Fatal(err)
-	}
-
-	c := New(WithRemoteYamlFile(key, cfg))
-	c.ProvideEssentials()
-	assert.Equal(t, "remote", c.String("name"))
-}
-
 type m1 struct {
 	di.Out
 	A int
@@ -201,18 +178,4 @@ func TestNew_missingDependencyErrorMessage(t *testing.T) {
 	c.Invoke(func(a a) error {
 		return nil
 	})
-}
-
-func put(cfg clientv3.Config, key, val string) error {
-	client, err := clientv3.New(cfg)
-	if err != nil {
-		return err
-	}
-	defer client.Close()
-
-	_, err = client.Put(context.Background(), key, val)
-	if err != nil {
-		return err
-	}
-	return nil
 }
