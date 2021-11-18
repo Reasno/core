@@ -88,6 +88,8 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	c.tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
 	response, err := c.underlying.Do(req)
 	if err != nil {
+		ext.Error.Set(clientSpan, true)
+		clientSpan.LogFields(log.String("event", "error"), log.String("message", err.Error()))
 		return response, err
 	}
 
@@ -108,7 +110,6 @@ func (c *Client) logRequest(req *http.Request, span opentracing.Span) {
 	}
 	length, _ := strconv.Atoi(req.Header.Get("Content-Length"))
 	if length > c.requestLogThreshold {
-		ext.Error.Set(span, true)
 		span.LogKV("request", "elided: Content-Length too large")
 		return
 	}

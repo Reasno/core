@@ -37,6 +37,11 @@ func TestClient_Do(t *testing.T) {
 			func() *http.Request { r, _ := http.NewRequest("GET", "https://example.com/", nil); return r }(),
 			[]Option{WithResponseLogThreshold(1)},
 		},
+		{
+			"error",
+			func() *http.Request { r, _ := http.NewRequest("GET", "https://localhost:9999/", nil); return r }(),
+			[]Option{},
+		},
 	}
 	for _, c := range cases {
 		c := c
@@ -44,7 +49,11 @@ func TestClient_Do(t *testing.T) {
 			t.Parallel()
 			tracer := mocktracer.New()
 			client := NewClient(tracer, c.Option...)
-			resp, _ := client.Do(c.request)
+			resp, err := client.Do(c.request)
+			if err != nil {
+				assert.True(t, tracer.FinishedSpans()[0].Tag("error").(bool))
+				return
+			}
 			defer resp.Body.Close()
 			assert.NotEmpty(t, tracer.FinishedSpans())
 		})
