@@ -1,6 +1,10 @@
 
+<a name="v0.11.1"></a>
+## [v0.11.1](https://github.com/DoNewsCode/core/compare/v0.8.0...v0.11.1) (0001-01-01)
+
+
 <a name="v0.8.0"></a>
-## [v0.8.0](https://github.com/DoNewsCode/core/compare/v0.7.3...v0.8.0) (2021-08-06)
+## [v0.8.0](https://github.com/DoNewsCode/core/compare/v0.7.3...v0.8.0) (2021-08-17)
 
 ### ♻️ Code Refactoring
 
